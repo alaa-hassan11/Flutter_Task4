@@ -1,22 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'product_widgets.dart';
-
-// Assignment answers:
-// StatefulWidget preserves mutable state during the widget lifetime.
-// initState runs once when the State object is created.
-// didChangeDependencies runs when inherited dependencies change.
-// build creates the widget UI.
-// deactivate runs when the widget is removed from the tree.
-// dispose releases resources when the State object is permanently removed.
-// setState tells Flutter to rebuild the UI after state changes.
-// MediaQuery provides screen information such as width.
-// ListView is suitable for narrow screens; GridView for wider screens.
-// Navigator.pushNamed uses named routes and can return a result with pop.
-// go_router supports named routes, path parameters, and query parameters.
-// context.go replaces the current route; context.push adds a route.
-// context.pop(result) returns a result to the previous route.
 
 void main() {
   runApp(const ProductsApp());
@@ -28,14 +12,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/',
       name: 'login',
-      builder: (context, state) => const LoginScreen(),
+      builder: (context, state) => const LoginPage(),
     ),
     GoRoute(
       path: '/products',
       name: 'products',
       builder: (context, state) {
         final user = state.uri.queryParameters['user'] ?? 'Guest';
-        return ProductsScreen(username: user);
+        return ProductsPage(username: user);
       },
     ),
     GoRoute(
@@ -43,9 +27,8 @@ final GoRouter appRouter = GoRouter(
       name: 'details',
       builder: (context, state) {
         final name = state.pathParameters['name'] ?? 'Product';
-        final price =
-            double.tryParse(state.pathParameters['price'] ?? '') ?? 0;
-        return DetailsScreen(name: name, price: price);
+        final price = int.tryParse(state.pathParameters['price'] ?? '') ?? 0;
+        return DetailsPage(name: name, price: price);
       },
     ),
   ],
@@ -64,32 +47,35 @@ class ProductsApp extends StatelessWidget {
   }
 }
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    debugPrint('LoginScreen: initState');
+    print('LoginPage: initState');
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    debugPrint('LoginScreen: didChangeDependencies');
+    print('LoginPage: didChangeDependencies');
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('LoginScreen: build');
+    print('LoginPage: build');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(
+        title: const Text('Login'),
+        centerTitle: true,
+      ),
       body: Center(
         child: ElevatedButton(
           onPressed: () {
@@ -98,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
               queryParameters: {'user': 'Guest'},
             );
           },
-          child: const Text('Login as Guest'),
+          child: const Text('Login'),
         ),
       ),
     );
@@ -106,66 +92,77 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void deactivate() {
-    debugPrint('LoginScreen: deactivate');
+    print('LoginPage: deactivate');
     super.deactivate();
   }
 
   @override
   void dispose() {
-    debugPrint('LoginScreen: dispose');
+    print('LoginPage: dispose');
     super.dispose();
   }
 }
 
-class ProductsScreen extends StatefulWidget {
+class ProductsPage extends StatefulWidget {
   final String username;
 
-  const ProductsScreen({super.key, required this.username});
+  const ProductsPage({super.key, required this.username});
 
   @override
-  State<ProductsScreen> createState() => _ProductsScreenState();
+  State<ProductsPage> createState() => _ProductsPageState();
 }
 
-class _ProductsScreenState extends State<ProductsScreen> {
+class _ProductsPageState extends State<ProductsPage> {
   int favorites = 0;
   double screenWidth = 0;
+  String? cartMessage;
 
   final List<Map<String, dynamic>> products = [
-    {'name': 'Laptop', 'price': 25000.0},
-    {'name': 'Phone', 'price': 12000.0},
-    {'name': 'Headphones', 'price': 1500.0},
-    {'name': 'Keyboard', 'price': 900.0},
-    {'name': 'Mouse', 'price': 500.0},
-    {'name': 'Monitor', 'price': 7000.0},
+    {'name': 'Laptop', 'price': 25000},
+    {'name': 'Phone', 'price': 12000},
+    {'name': 'Headphones', 'price': 1500},
+    {'name': 'Keyboard', 'price': 900},
+    {'name': 'Mouse', 'price': 500},
+    {'name': 'Monitor', 'price': 7000},
   ];
 
   @override
   void initState() {
     super.initState();
-    debugPrint('ProductsScreen: initState');
+    print('ProductsPage: initState');
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    screenWidth = MediaQuery.of(context).size.width;
-    debugPrint('ProductsScreen: didChangeDependencies');
-    debugPrint('Screen width: $screenWidth');
+    final size = MediaQuery.sizeOf(context);
+    print(
+      'ProductsPage: didChangeDependencies -> width: ${size.width}, height: ${size.height}',
+    );
+    screenWidth = size.width;
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('ProductsScreen: build');
+    print('ProductsPage: build');
 
     final isWide = screenWidth >= 600;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Products - ${widget.username}'),
+        title: Text('Welcome, ${widget.username}'),
         actions: [
           Padding(
-            padding: const EdgeInsets.all(12),
-            child: Center(child: Text('Favorites: $favorites')),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Center(
+              child: Text(
+                'Favorites: $favorites',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -173,19 +170,48 @@ class _ProductsScreenState extends State<ProductsScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Text('Screen width: ${screenWidth.toStringAsFixed(0)} px'),
+            child: Text(
+              'Screen width: ${screenWidth.toStringAsFixed(0)} px',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
           ),
+          if (cartMessage != null)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      cartMessage!,
+                      style: const TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: isWide
                 ? ProductsGridView(
                     products: products,
-                    onProductTap: openDetails,
-                    onFavorite: addFavorite,
+                    onFavoritePressed: addFavorite,
+                    onProductTap: (index) => openDetails(products[index]),
                   )
                 : ProductsListView(
                     products: products,
-                    onProductTap: openDetails,
-                    onFavorite: addFavorite,
+                    onFavoritePressed: addFavorite,
+                    onProductTap: (index) => openDetails(products[index]),
                   ),
           ),
         ],
@@ -200,66 +226,65 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   Future<void> openDetails(Map<String, dynamic> product) async {
-    final result = await context.pushNamed<String>(
-      'details',
-      pathParameters: {
-        'name': product['name'].toString(),
-        'price': product['price'].toString(),
-      },
+    final result = await context.push<String>(
+      '/details/${product['name']}/${product['price']}',
     );
 
     if (!mounted) return;
 
     if (result != null) {
+      setState(() {
+        cartMessage = result;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Result: $result')),
+        SnackBar(content: Text(result)),
       );
     }
   }
 
   @override
   void deactivate() {
-    debugPrint('ProductsScreen: deactivate');
+    print('ProductsPage: deactivate');
     super.deactivate();
   }
 
   @override
   void dispose() {
-    debugPrint('ProductsScreen: dispose');
+    print('ProductsPage: dispose');
     super.dispose();
   }
 }
 
-class DetailsScreen extends StatefulWidget {
+class DetailsPage extends StatefulWidget {
   final String name;
-  final double price;
+  final int price;
 
-  const DetailsScreen({
+  const DetailsPage({
     super.key,
     required this.name,
     required this.price,
   });
 
   @override
-  State<DetailsScreen> createState() => _DetailsScreenState();
+  State<DetailsPage> createState() => _DetailsPageState();
 }
 
-class _DetailsScreenState extends State<DetailsScreen> {
+class _DetailsPageState extends State<DetailsPage> {
   @override
   void initState() {
     super.initState();
-    debugPrint('DetailsScreen: initState');
+    print('DetailsPage: initState');
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    debugPrint('DetailsScreen: didChangeDependencies');
+    print('DetailsPage: didChangeDependencies');
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('DetailsScreen: build');
+    print('DetailsPage: build');
 
     return Scaffold(
       appBar: AppBar(title: const Text('Product Details')),
@@ -276,15 +301,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Price: ${widget.price.toStringAsFixed(2)}',
+              'Price: \$${widget.price}',
               style: const TextStyle(fontSize: 20),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                context.pop('${widget.name} selected');
+                context.pop('${widget.name} added to cart');
               },
-              child: const Text('Back and Return Result'),
+              child: const Text('Add to Cart'),
             ),
           ],
         ),
@@ -294,13 +319,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   @override
   void deactivate() {
-    debugPrint('DetailsScreen: deactivate');
+    print('DetailsPage: deactivate');
     super.deactivate();
   }
 
   @override
   void dispose() {
-    debugPrint('DetailsScreen: dispose');
+    print('DetailsPage: dispose');
     super.dispose();
   }
 }
